@@ -1,7 +1,8 @@
-// pages/api/proxy-pdf.js
-import fetch from 'node-fetch';
-
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*'); // O reemplaza * por el dominio de tu frontend
+  res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  res.setHeader('Access-Control-Allow-Methods', 'GET');
+
   const { url } = req.query;
 
   if (!url) {
@@ -9,14 +10,16 @@ export default async function handler(req, res) {
   }
 
   try {
-    const response = await fetch(url, { method: 'GET' });
-
+    const response = await fetch(url);
+    
     if (!response.ok) {
       throw new Error(`Failed to fetch: ${response.statusText}`);
     }
 
+    const buffer = await response.arrayBuffer();
     res.setHeader('Content-Type', 'application/pdf');
-    response.body.pipe(res);
+    res.send(Buffer.from(buffer));
+
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
